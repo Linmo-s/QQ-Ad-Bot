@@ -1,0 +1,4 @@
+nonebot2[fastapi]
+nonebot-adapter-onebot
+nonebot-plugin-apscheduler
+python-multipart

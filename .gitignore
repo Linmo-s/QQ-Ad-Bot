@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# NapCat 运行时生成
+NapCat.Shell/node_modules/
+NapCat.Shell/logs/
+NapCat.Shell/cache/
+
+# 敏感配置（运行时数据）
+massages_image_massage/data/config.json
+
+# IDE
+.vscode/
+.idea/
+
+# 系统文件
+Thumbs.db
+.DS_Store

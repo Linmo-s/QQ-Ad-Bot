@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QQ广告机器人 - 管理面板</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f0f2f5;color:#333}
+.header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;padding:20px 30px;display:flex;justify-content:space-between;align-items:center}
+.header h1{font-size:22px;font-weight:600}
+.header .logout-btn{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 16px;border-radius:4px;cursor:pointer;font-size:13px}
+.header .logout-btn:hover{background:rgba(255,255,255,.3)}
+.container{max-width:1100px;margin:20px auto;padding:0 20px}
+.tabs{display:flex;gap:0;margin-bottom:20px;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.tab{flex:1;padding:12px 0;text-align:center;cursor:pointer;font-size:14px;color:#666;transition:all .2s;border-bottom:3px solid transparent}
+.tab.active{color:#667eea;border-bottom-color:#667eea;font-weight:600;background:#f8f9ff}
+.tab:hover{background:#f8f9ff}
+.card{background:#fff;border-radius:8px;padding:24px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.card h2{font-size:17px;margin-bottom:16px;color:#333;border-left:4px solid #667eea;padding-left:12px}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:13px;color:#666;margin-bottom:5px;font-weight:500}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;transition:border-color .2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#667eea}
+.form-group textarea{min-height:80px;resize:vertical;font-family:inherit}
+.row{display:flex;gap:16px}
+.row .form-group{flex:1}
+.btn{padding:8px 20px;border:none;border-radius:6px;cursor:pointer;font-size:14px;transition:all .2s}
+.btn-primary{background:#667eea;color:#fff}.btn-primary:hover{background:#5a6fd6}
+.btn-danger{background:#ff4757;color:#fff}.btn-danger:hover{background:#e8404f}
+.btn-success{background:#2ed573;color:#fff}.btn-success:hover{background:#26b861}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-outline{background:#fff;color:#667eea;border:1px solid #667eea}.btn-outline:hover{background:#f8f9ff}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #eee;font-size:13px}
+th{background:#f8f9ff;color:#666;font-weight:600}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.badge-on{background:#d4edda;color:#155724}.badge-off{background:#f8d7da;color:#721c24}
+.kw-tag{display:inline-block;background:#e8eaff;color:#667eea;padding:3px 10px;border-radius:12px;font-size:12px;margin:3px}
+.kw-tag .del{cursor:pointer;margin-left:6px;color:#999}.kw-tag .del:hover{color:#ff4757}
+.login-wrap{display:flex;justify-content:center;align-items:center;min-height:100vh;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)}
+.login-box{background:#fff;border-radius:12px;padding:40px;width:380px;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.login-box h1{text-align:center;margin-bottom:8px;color:#333;font-size:24px}
+.login-box p{text-align:center;color:#999;margin-bottom:24px;font-size:13px}
+.login-box .form-group{margin-bottom:18px}
+.login-box .btn-primary{width:100%;padding:12px;font-size:15px}
+.toast{position:fixed;top:20px;right:20px;padding:12px 24px;border-radius:8px;color:#fff;font-size:14px;z-index:9999;animation:slideIn .3s}
+.toast-ok{background:#2ed573}.toast-err{background:#ff4757}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;justify-content:center;align-items:center;z-index:999}
+.modal{background:#fff;border-radius:12px;padding:28px;width:500px;max-width:90vw;max-height:80vh;overflow-y:auto}
+.modal h3{margin-bottom:16px;font-size:17px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-radius:8px;padding:16px}
+.stat-card .num{font-size:28px;font-weight:700}
+.stat-card .lbl{font-size:12px;opacity:.8;margin-top:4px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- 登录页 -->
+<div id="loginPage" class="login-wrap">
+<div class="login-box">
+  <h1>QQ广告机器人</h1>
+  <p>管理面板</p>
+  <div class="form-group">
+    <label>用户名</label>
+    <input type="text" id="loginUser" value="admin" placeholder="用户名">
+  </div>
+  <div class="form-group">
+    <label>密码</label>
+    <input type="password" id="loginPass" placeholder="密码" onkeydown="if(event.key==='Enter')doLogin()">
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
+    <input type="checkbox" id="rememberMe" style="width:auto">
+    <label for="rememberMe" style="font-size:13px;color:#666;cursor:pointer">记住密码</label>
+  </div>
+  <button class="btn btn-primary" onclick="doLogin()">登 录</button>
+  <p style="margin-top:14px;text-align:center;color:#aaa;font-size:12px">默认密码: admin123</p>
+</div>
+</div>
+
+<!-- 主面板 -->
+<div id="mainApp" class="hidden">
+<div class="header">
+  <h1>QQ广告机器人管理面板</h1>
+  <button class="logout-btn" onclick="doLogout()">退出登录</button>
+</div>
+<div class="container">
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('init')" id="tabInit">初始化向导</div>
+    <div class="tab" onclick="switchTab('system')" id="tabSystem">系统配置</div>
+    <div class="tab" onclick="switchTab('plugin')" id="tabPlugin">插件配置</div>
+    <div class="tab" onclick="switchTab('status')" id="tabStatus">状态监控</div>
+  </div>
+
+  <!-- 初始化向导 -->
+  <div id="pageInit" class="card">
+    <h2>初始化向导</h2>
+    <p style="color:#999;margin-bottom:18px;font-size:13px">首次使用请完成以下配置</p>
+    <div class="form-group">
+      <label>设置面板密码（至少6位）</label>
+      <input type="password" id="initPassword" placeholder="新密码">
+    </div>
+    <div class="row">
+      <div class="form-group"><label>监听地址 (HOST)</label><input id="initHost" value="127.0.0.1"></div>
+      <div class="form-group"><label>监听端口 (PORT)</label><input id="initPort" type="number" value="8080"></div>
+    </div>
+    <div class="form-group"><label>超级用户 QQ 号（多个用逗号分隔）</label><input id="initSuperusers" placeholder="如: 123456789,987654321"></div>
+    <div class="form-group">
+      <label>OneBot 连接方式</label>
+      <select id="initConnection">
+        <option value="reverse_ws">反向 WebSocket（推荐）</option>
+        <option value="forward_ws">正向 WebSocket</option>
+        <option value="http_post">HTTP POST</option>
+      </select>
+    </div>
+    <div class="form-group" id="initWsGroup">
+      <label>正向 WS 地址</label>
+      <input id="initWsUrl" value="ws://127.0.0.1:6700">
+    </div>
+    <div class="form-group hidden" id="initHttpGroup">
+      <label>HTTP API 地址</label>
+      <input id="initHttpRoot" value="http://127.0.0.1:5700">
+    </div>
+    <hr style="margin:16px 0;border:none;border-top:1px solid #eee">
+    <h2 style="border-left:4px solid #2ed573;padding-left:12px;margin-bottom:12px">QQ 协议端 (NapCat)</h2>
+    <div id="initNapcatDetect" style="padding:12px;background:#f8f9ff;border-radius:6px;margin-bottom:14px;font-size:13px">
+      正在检测 NapCat...
+    </div>
+    <div id="initNapcatNotFound" class="hidden" style="padding:12px;background:#f8d7da;border-radius:6px;margin-bottom:14px;font-size:13px">
+      未检测到 NapCat。请将 <code>NapCat.Shell</code> 目录放到项目根目录下。
+      <a href="https://github.com/NapNeko/NapCatQQ/releases" target="_blank" style="color:#667eea">前往下载</a>
+    </div>
+    <div id="initNapcatReady" class="hidden">
+      <div class="form-group">
+        <label>QQ 号（不填则扫码登录）</label>
+        <input id="initNapcatQQ" placeholder="机器人的 QQ 号">
+      </div>
+      <div class="form-group">
+        <label>自动启动 NapCat</label>
+        <select id="initNapcatAuto">
+          <option value="true">是，启动时自动运行</option>
+          <option value="false">否，手动启动</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="doInit()">保存并完成初始化</button>
+  </div>
+
+  <!-- 系统配置 -->
+  <div id="pageSystem" class="hidden">
+    <div class="card">
+      <h2>NoneBot2 配置</h2>
+      <div class="row">
+        <div class="form-group"><label>监听地址</label><input id="sysHost"></div>
+        <div class="form-group"><label>监听端口</label><input id="sysPort" type="number"></div>
+      </div>
+      <div class="form-group"><label>超级用户 QQ 号（逗号分隔）</label><input id="sysSuperusers"></div>
+      <div class="form-group">
+        <label>OneBot 连接方式</label>
+        <select id="sysConnection" onchange="toggleConnectionFields('sys')">
+          <option value="reverse_ws">反向 WebSocket</option>
+          <option value="forward_ws">正向 WebSocket</option>
+          <option value="http_post">HTTP POST</option>
+        </select>
+      </div>
+      <div class="form-group" id="sysWsGroup"><label>正向 WS 地址</label><input id="sysWsUrl"></div>
+      <div class="form-group hidden" id="sysHttpGroup"><label>HTTP API 地址</label><input id="sysHttpRoot"></div>
+      <div class="form-group">
+        <label>日志级别</label>
+        <select id="sysLogLevel">
+          <option value="DEBUG">DEBUG</option><option value="INFO">INFO</option>
+          <option value="WARNING">WARNING</option><option value="ERROR">ERROR</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" onclick="saveSystem()">保存配置</button>
+        <button class="btn btn-danger" onclick="restartBot()">重启机器人</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>QQ 协议端 (NapCat)</h2>
+      <div id="sysNapcatDetect" style="padding:12px;background:#f8f9ff;border-radius:6px;margin-bottom:14px;font-size:13px">
+        正在检测...
+      </div>
+      <div id="sysNapcatNotFound" class="hidden" style="padding:12px;background:#f8d7da;border-radius:6px;margin-bottom:14px;font-size:13px">
+        未检测到 NapCat。请将 <code>NapCat.Shell</code> 目录放到项目根目录下。
+        <a href="https://github.com/NapNeko/NapCatQQ/releases" target="_blank" style="color:#667eea">下载</a>
+      </div>
+      <div id="sysNapcatReady" class="hidden">
+        <div class="row">
+          <div class="form-group"><label>QQ 号</label><input id="sysNapcatQQ" placeholder="机器人 QQ 号（不填则扫码登录）"></div>
+          <div class="form-group"><label>自动启动</label>
+            <select id="sysNapcatAuto"><option value="true">是</option><option value="false">否</option></select>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <span style="font-size:13px;color:#666">进程状态:</span>
+          <span id="napcatStatusBadge" class="badge badge-off">检测中</span>
+          <button class="btn btn-sm btn-success" onclick="napcatAction('start')">启动</button>
+          <button class="btn btn-sm btn-danger" onclick="napcatAction('stop')">停止</button>
+          <button class="btn btn-sm btn-outline" onclick="refreshNapcatStatus()">刷新</button>
+        </div>
+        <button class="btn btn-primary" onclick="saveSystem()">保存 NapCat 配置</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>修改面板密码</h2>
+      <div class="form-group"><label>旧密码</label><input type="password" id="oldPw"></div>
+      <div class="form-group"><label>新密码（至少6位）</label><input type="password" id="newPw"></div>
+      <button class="btn btn-primary" onclick="changePassword()">修改密码</button>
+    </div>
+  </div>
+
+  <!-- 插件配置 -->
+  <div id="pagePlugin" class="hidden">
+    <div class="card">
+      <h2>全局设置</h2>
+      <div class="form-group">
+        <label>关键词（回车添加）</label>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input id="kwInput" placeholder="输入关键词后按回车" style="flex:1" onkeydown="if(event.key==='Enter')addKeyword()">
+          <button class="btn btn-sm btn-outline" onclick="addKeyword()">添加</button>
+        </div>
+        <div id="kwTags"></div>
+      </div>
+      <div class="row">
+        <div class="form-group"><label>调度延迟最小(秒)</label><input id="schedMin" type="number"></div>
+        <div class="form-group"><label>调度延迟最大(秒)</label><input id="schedMax" type="number"></div>
+      </div>
+      <div class="row">
+        <div class="form-group"><label>打字延迟最小(秒)</label><input id="typeMin" type="number"></div>
+        <div class="form-group"><label>打字延迟最大(秒)</label><input id="typeMax" type="number"></div>
+      </div>
+      <div class="row">
+        <div class="form-group"><label>默认MESSAGE_LIMIT最小</label><input id="defLimitMin" type="number"></div>
+        <div class="form-group"><label>默认MESSAGE_LIMIT最大</label><input id="defLimitMax" type="number"></div>
+      </div>
+      <div class="row">
+        <div class="form-group"><label>静默时段开始(时)</label><input id="quietStart" type="number"></div>
+        <div class="form-group"><label>静默时段结束(时)</label><input id="quietEnd" type="number"></div>
+      </div>
+      <button class="btn btn-primary" onclick="saveGlobal()">保存全局设置</button>
+    </div>
+
+    <div class="card">
+      <h2>群组管理</h2>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <input id="addGroupId" placeholder="输入群号" style="flex:1">
+        <button class="btn btn-success" onclick="addGroup()">添加群组</button>
+      </div>
+      <table>
+        <thead><tr><th>群号</th><th>状态</th><th>计数器</th><th>当前阈值</th><th>上次发送</th><th>操作</th></tr></thead>
+        <tbody id="groupTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 群组编辑弹窗 -->
+  <div id="groupModal" class="modal-overlay hidden">
+    <div class="modal">
+      <h3>编辑群组 <span id="editGroupId"></span></h3>
+      <div class="form-group"><label>启用</label><select id="editEnabled"><option value="true">是</option><option value="false">否</option></select></div>
+      <div class="form-group">
+        <label>图文消息（每行一条，随机选取）</label>
+        <textarea id="editTexts" rows="6" placeholder="每条完整消息之间用空行分隔，发送时随机选一条&#10;示例:&#10;第一条广告内容&#10;可以多行&#10;&#10;第二条广告内容&#10;也可以多行"></textarea>
+      </div>
+      <div class="form-group">
+        <label>图片路径</label>
+        <div style="display:flex;gap:8px">
+          <input id="editImage" style="flex:1">
+          <label class="btn btn-sm btn-outline" style="display:inline-flex;align-items:center;cursor:pointer">
+            上传
+            <input type="file" accept="image/*" id="editImageFile" style="display:none" onchange="uploadImage()">
+          </label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-group"><label>MESSAGE_LIMIT最小(>=5)</label><input id="editLimitMin" type="number" min="5"></div>
+        <div class="form-group"><label>MESSAGE_LIMIT最大</label><input id="editLimitMax" type="number"></div>
+      </div>
+      <div class="form-group"><label>最小发送间隔(秒)</label><input id="editInterval" type="number"></div>
+      <div class="form-group"><label>拆分发送（先文字后图片）</label><select id="editSplit"><option value="false">关闭</option><option value="true">开启</option></select></div>
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button class="btn btn-primary" onclick="saveGroup()">保存</button>
+        <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 二维码扫码弹窗 -->
+  <div id="qrcodeModal" class="modal-overlay hidden">
+    <div class="modal" style="text-align:center">
+      <h3>QQ 扫码登录</h3>
+      <p style="color:#999;font-size:13px;margin-bottom:16px">请使用手机 QQ 扫描下方二维码</p>
+      <div id="qrcodeContainer" style="margin:20px 0;min-height:200px;display:flex;justify-content:center;align-items:center">
+        <p style="color:#999">等待二维码生成...</p>
+      </div>
+      <button class="btn btn-outline" onclick="QRCodeManager.refresh()">刷新二维码</button>
+      <button class="btn btn-outline" onclick="QRCodeManager.close()">关闭</button>
+    </div>
+  </div>
+
+  <!-- 状态监控 -->
+  <div id="pageStatus" class="hidden">
+    <div class="card" id="connCard">
+      <h2>OneBot 连接状态</h2>
+      <div id="connInfo" style="font-size:14px;color:#666">检测中...</div>
+    </div>
+    <div class="stats" id="statsCards"></div>
+    <div class="card">
+      <h2>群组状态</h2>
+      <table>
+        <thead><tr><th>群号</th><th>状态</th><th>计数</th><th>阈值</th><th>进度</th><th>上次发送</th></tr></thead>
+        <tbody id="statusTable"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>发送日志（最近记录）</h2>
+      <table>
+        <thead><tr><th>时间</th><th>群号</th><th>状态</th><th>详情</th></tr></thead>
+        <tbody id="logTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const API = '/adbot/api';
+let token = '';
+let keywords = [];
+
+function toast(msg, ok=true) {
+  const d = document.createElement('div');
+  d.className = 'toast ' + (ok ? 'toast-ok' : 'toast-err');
+  d.textContent = msg;
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), 3000);
+}
+
+async function api(path, method='GET', body=null) {
+  const h = {'Content-Type': 'application/json'};
+  if (token) h['Authorization'] = 'Bearer ' + token;
+  const opt = {method, headers: h};
+  if (body) opt.body = JSON.stringify(body);
+  const r = await fetch(API + path, opt);
+  if (r.status === 401) {
+    token = '';
+    document.getElementById('mainApp').classList.add('hidden');
+    document.getElementById('loginPage').classList.remove('hidden');
+    toast('登录已过期，请重新登录', false);
+  }
+  return r.json();
+}
+
+async function doLogin() {
+  const u = document.getElementById('loginUser').value;
+  const p = document.getElementById('loginPass').value;
+  const remember = document.getElementById('rememberMe').checked;
+  const r = await api('/login', 'POST', {username: u, password: p});
+  if (r.ok) {
+    if (remember) {
+      localStorage.setItem('adbot_user', u);
+      localStorage.setItem('adbot_pw', p);
+    } else {
+      localStorage.removeItem('adbot_user');
+      localStorage.removeItem('adbot_pw');
+    }
+    token = r.token;
+    document.getElementById('loginPage').classList.add('hidden');
+    document.getElementById('mainApp').classList.remove('hidden');
+    if (r.initialized) {
+      switchTab('plugin');
+    }
+    loadAll();
+  } else {
+    toast(r.msg, false);
+  }
+}
+
+// 自动填充记住的账号密码
+(function() {
+  const u = localStorage.getItem('adbot_user');
+  const p = localStorage.getItem('adbot_pw');
+  if (u) document.getElementById('loginUser').value = u;
+  if (p) {
+    document.getElementById('loginPass').value = p;
+    document.getElementById('rememberMe').checked = true;
+  }
+})();
+
+function doLogout() {
+  token = '';
+  document.getElementById('mainApp').classList.add('hidden');
+  document.getElementById('loginPage').classList.remove('hidden');
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('[id^="page"]').forEach(p => p.classList.add('hidden'));
+  document.getElementById('page' + name.charAt(0).toUpperCase() + name.slice(1)).classList.remove('hidden');
+  document.getElementById('tab' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
+  if (name === 'status') loadStatus();
+  if (name === 'system') loadSystem();
+  if (name === 'plugin') loadPluginConfig();
+}
+
+function toggleConnectionFields(prefix) {
+  const v = document.getElementById(prefix + 'Connection').value;
+  document.getElementById(prefix + 'WsGroup').classList.toggle('hidden', v === 'http_post');
+  document.getElementById(prefix + 'HttpGroup').classList.toggle('hidden', v !== 'http_post');
+}
+
+// Init
+document.getElementById('initConnection').addEventListener('change', () => toggleConnectionFields('init'));
+
+// NapCat 检测
+async function detectNapcat(prefix) {
+  const detectEl = document.getElementById(prefix + 'NapcatDetect');
+  const notFoundEl = document.getElementById(prefix + 'NapcatNotFound');
+  const readyEl = document.getElementById(prefix + 'NapcatReady');
+
+  detectEl.classList.remove('hidden');
+  notFoundEl.classList.add('hidden');
+  readyEl.classList.add('hidden');
+
+  try {
+    const r = await api('/napcat-status');
+
+    if (r.found) {
+      detectEl.innerHTML = '<span class="badge badge-on">已就绪</span> <span style="margin-left:6px;color:#666">NapCat.Shell</span>';
+      readyEl.classList.remove('hidden');
+    } else {
+      detectEl.classList.add('hidden');
+      notFoundEl.classList.remove('hidden');
+    }
+    return r.found;
+  } catch(e) {
+    detectEl.textContent = '检测失败';
+    return false;
+  }
+}
+
+async function doInit() {
+  const pw = document.getElementById('initPassword').value;
+  if (pw.length < 6) return toast('密码至少6位', false);
+  const superusers = document.getElementById('initSuperusers').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const conn = document.getElementById('initConnection').value;
+  const body = {
+    host: document.getElementById('initHost').value,
+    port: parseInt(document.getElementById('initPort').value),
+    superusers,
+    log_level: 'INFO',
+    onebot_connection: conn,
+    panel_initialized: true,
+    napcat_qq_number: document.getElementById('initNapcatQQ') ? document.getElementById('initNapcatQQ').value.trim() : '',
+    napcat_auto_start: document.getElementById('initNapcatAuto') ? document.getElementById('initNapcatAuto').value === 'true' : true,
+  };
+  if (conn === 'forward_ws') {
+    body.onebot_ws_urls = [document.getElementById('initWsUrl').value];
+  } else if (conn === 'http_post') {
+    const root = document.getElementById('initHttpRoot').value;
+    if (superusers.length > 0) body.onebot_api_roots = {[superusers[0]]: root};
+  }
+  await api('/system', 'POST', body);
+  await api('/system/password', 'POST', {old_password: 'admin123', new_password: pw});
+  toast('初始化完成！请重启机器人以启动 NapCat');
+  switchTab('plugin');
+}
+
+// System
+async function loadSystem() {
+  const r = await api('/system');
+  document.getElementById('sysHost').value = r.host;
+  document.getElementById('sysPort').value = r.port;
+  document.getElementById('sysSuperusers').value = (r.superusers||[]).join(',');
+  document.getElementById('sysConnection').value = r.onebot_connection;
+  document.getElementById('sysWsUrl').value = (r.onebot_ws_urls||[''])[0];
+  const roots = r.onebot_api_roots || {};
+  document.getElementById('sysHttpRoot').value = Object.values(roots)[0] || '';
+  document.getElementById('sysLogLevel').value = r.log_level;
+  if (document.getElementById('sysNapcatQQ')) document.getElementById('sysNapcatQQ').value = r.napcat_qq_number || '';
+  if (document.getElementById('sysNapcatAuto')) document.getElementById('sysNapcatAuto').value = String(r.napcat_auto_start !== false);
+  toggleConnectionFields('sys');
+  detectNapcat('sys');
+  refreshNapcatStatus();
+}
+
+async function saveSystem() {
+  const superusers = document.getElementById('sysSuperusers').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const conn = document.getElementById('sysConnection').value;
+  const body = {
+    host: document.getElementById('sysHost').value,
+    port: parseInt(document.getElementById('sysPort').value),
+    superusers,
+    log_level: document.getElementById('sysLogLevel').value,
+    onebot_connection: conn,
+    napcat_qq_number: document.getElementById('sysNapcatQQ') ? document.getElementById('sysNapcatQQ').value.trim() : '',
+    napcat_auto_start: document.getElementById('sysNapcatAuto') ? document.getElementById('sysNapcatAuto').value === 'true' : true,
+  };
+  if (conn === 'forward_ws') body.onebot_ws_urls = [document.getElementById('sysWsUrl').value];
+  if (conn === 'http_post' && superusers.length) body.onebot_api_roots = {[superusers[0]]: document.getElementById('sysHttpRoot').value};
+  const r = await api('/system', 'POST', body);
+  toast(r.msg || '已保存');
+}
+
+async function restartBot() {
+  if (!confirm('确定要重启机器人吗？')) return;
+  await api('/system/restart', 'POST');
+  toast('正在重启...');
+}
+
+async function refreshNapcatStatus() {
+  const badge = document.getElementById('napcatStatusBadge');
+  if (!badge) return;
+  try {
+    const r = await api('/napcat-status');
+    badge.className = 'badge ' + (r.running ? 'badge-on' : 'badge-off');
+    badge.textContent = r.running ? '运行中' : r.msg;
+  } catch(e) {
+    badge.className = 'badge badge-off';
+    badge.textContent = '无法检测';
+  }
+}
+
+async function napcatAction(action) {
+  const r = await api('/napcat-' + action, 'POST');
+  toast(r.msg || (r.ok ? '操作成功' : '操作失败'), r.ok);
+  setTimeout(refreshNapcatStatus, 1000);
+  if (action === 'start' && r.ok) {
+    // 没有配置 QQ 号时弹出二维码弹窗
+    const qqInput = document.getElementById('sysNapcatQQ');
+    if (!qqInput || !qqInput.value.trim()) {
+      setTimeout(() => QRCodeManager.show(), 2000);
+    }
+  }
+}
+
+const QRCodeManager = {
+  _currentObjectURL: null,
+  _pollTimer: null,
+  _knownMtime: null,
+  _state: 'closed',
+
+  revokeObjectURL() {
+    if (this._currentObjectURL) {
+      URL.revokeObjectURL(this._currentObjectURL);
+      this._currentObjectURL = null;
+    }
+  },
+
+  async show() {
+    const modal = document.getElementById('qrcodeModal');
+    const container = document.getElementById('qrcodeContainer');
+    this._state = 'loading';
+    this._knownMtime = null;
+    container.innerHTML = '<p style="color:#999">加载中...</p>';
+    modal.classList.remove('hidden');
+
+    const loaded = await this._loadWithRetry(30, 2000);
+    if (this._state === 'closed') return;
+    if (loaded) {
+      try { const qs = await api('/napcat-qrcode-status'); this._knownMtime = qs.qrFileMtime; } catch(e) {}
+    }
+    // 无论加载成功与否都进入轮询，轮询中会持续检测文件出现并自动加载
+    this._startPolling();
+  },
+
+  close() {
+    this._state = 'closed';
+    this.revokeObjectURL();
+    document.getElementById('qrcodeModal').classList.add('hidden');
+    this._stopPolling();
+  },
+
+  _stopPolling() {
+    if (this._pollTimer) { clearTimeout(this._pollTimer); this._pollTimer = null; }
+  },
+
+  async _loadWithRetry(maxAttempts, intervalMs) {
+    for (let i = 0; i < maxAttempts; i++) {
+      if (this._state === 'closed') return false;
+      if (await this._fetchImage()) return true;
+      await new Promise(r => setTimeout(r, intervalMs));
+    }
+    return false;
+  },
+
+  async _fetchImage() {
+    const h = {};
+    if (token) h['Authorization'] = 'Bearer ' + token;
+    try {
+      const r = await fetch(API + '/napcat-qrcode', {headers: h});
+      if (r.ok) {
+        this.revokeObjectURL();
+        const blob = await r.blob();
+        const url = URL.createObjectURL(blob);
+        this._currentObjectURL = url;
+        document.getElementById('qrcodeContainer').innerHTML =
+          '<img src="' + url + '" style="max-width:300px;border:1px solid #eee;border-radius:8px">';
+        return true;
+      }
+    } catch(e) {}
+    return false;
+  },
+
+  _startPolling() {
+    this._stopPolling();
+    this._pollTimer = setTimeout(() => this._poll(), 3000);
+  },
+
+  async _poll() {
+    if (this._state === 'closed') return;
+    try {
+      // 检查登录状态
+      const ls = await api('/napcat-login-status');
+      if (ls.isLogin) {
+        this._state = 'success';
+        document.getElementById('qrcodeContainer').innerHTML =
+          '<p style="color:#2ed573;font-size:16px;font-weight:600">登录成功！</p>';
+        setTimeout(() => this.close(), 1500);
+        refreshNapcatStatus();
+        return;
+      }
+
+      // 检查二维码文件是否被 NapCat 重新生成
+      const qs = await api('/napcat-qrcode-status');
+      if (qs.qrFileMtime && qs.qrFileMtime !== this._knownMtime) {
+        this._knownMtime = qs.qrFileMtime;
+        await this._fetchImage();
+        // 清除过期提示
+        const notice = document.getElementById('qrExpiryNotice');
+        if (notice) notice.remove();
+      }
+
+      // 显示过期提示
+      if (ls.loginError && ls.loginError.includes('过期')) {
+        const container = document.getElementById('qrcodeContainer');
+        const img = container.querySelector('img');
+        if (img) img.style.opacity = '0.4';
+        let notice = document.getElementById('qrExpiryNotice');
+        if (!notice) {
+          notice = document.createElement('p');
+          notice.id = 'qrExpiryNotice';
+          notice.style.cssText = 'color:#ff4757;font-size:13px;margin-top:8px';
+          notice.textContent = '二维码已过期，正在自动刷新...';
+          container.appendChild(notice);
+        }
+        // 触发刷新
+        this.refresh();
+        return;
+      }
+    } catch(e) {}
+    this._pollTimer = setTimeout(() => this._poll(), 3000);
+  },
+
+  async refresh() {
+    this._stopPolling();
+    this.revokeObjectURL();
+    this._state = 'refreshing';
+    const container = document.getElementById('qrcodeContainer');
+    container.innerHTML = '<p style="color:#999">正在刷新...</p>';
+
+    await api('/napcat-refresh-qrcode', 'POST');
+    const loaded = await this._loadWithRetry(30, 2000);
+    if (this._state === 'closed') return;
+
+    if (!loaded) {
+      container.innerHTML = '<p style="color:#ff4757">刷新失败</p>'
+        + '<button class="btn btn-outline" style="margin-top:12px" onclick="QRCodeManager.refresh()">重试</button>';
+      return;
+    }
+    try { const qs = await api('/napcat-qrcode-status'); this._knownMtime = qs.qrFileMtime; } catch(e) {}
+    this._startPolling();
+  }
+};
+
+async function changePassword() {
+  const r = await api('/system/password', 'POST', {
+    old_password: document.getElementById('oldPw').value,
+    new_password: document.getElementById('newPw').value,
+  });
+  toast(r.msg || '已修改', r.ok);
+}
+
+// Plugin config
+async function loadPluginConfig() {
+  const r = await api('/config');
+  const gs = r.global_settings;
+  keywords = gs.keywords || [];
+  renderKeywords();
+  document.getElementById('schedMin').value = gs.schedule_delay_min;
+  document.getElementById('schedMax').value = gs.schedule_delay_max;
+  document.getElementById('typeMin').value = gs.typing_duration_min;
+  document.getElementById('typeMax').value = gs.typing_duration_max;
+  document.getElementById('defLimitMin').value = gs.default_message_limit_min;
+  document.getElementById('defLimitMax').value = gs.default_message_limit_max;
+  document.getElementById('quietStart').value = gs.quiet_hours_start;
+  document.getElementById('quietEnd').value = gs.quiet_hours_end;
+  renderGroupTable(r.groups || {});
+}
+
+function renderKeywords() {
+  document.getElementById('kwTags').innerHTML = keywords.map(k =>
+    `<span class="kw-tag">${k}<span class="del" onclick="removeKeyword('${k}')">&times;</span></span>`
+  ).join('');
+}
+
+function addKeyword() {
+  const inp = document.getElementById('kwInput');
+  const v = inp.value.trim();
+  if (v && !keywords.includes(v)) { keywords.push(v); renderKeywords(); }
+  inp.value = '';
+}
+
+function removeKeyword(k) {
+  keywords = keywords.filter(x => x !== k);
+  renderKeywords();
+}
+
+function renderGroupTable(groups) {
+  const tbody = document.getElementById('groupTable');
+  tbody.innerHTML = Object.entries(groups).map(([gid, g]) => `
+    <tr>
+      <td>${gid}</td>
+      <td><span class="badge ${g.enabled ? 'badge-on' : 'badge-off'}">${g.enabled ? '启用' : '禁用'}</span></td>
+      <td>${g.counter}</td>
+      <td>${g.message_limit}</td>
+      <td>${g.last_sent_time ? g.last_sent_time.replace('T', ' ').slice(0, 16) : '-'}</td>
+      <td>
+        <button class="btn btn-sm btn-outline" onclick='editGroup(${gid}, ${JSON.stringify(g).replace(/'/g,"&#39;")})'>编辑</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteGroup(${gid})">删除</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function saveGlobal() {
+  const body = {
+    keywords,
+    schedule_delay_min: parseInt(document.getElementById('schedMin').value),
+    schedule_delay_max: parseInt(document.getElementById('schedMax').value),
+    typing_duration_min: parseInt(document.getElementById('typeMin').value),
+    typing_duration_max: parseInt(document.getElementById('typeMax').value),
+    default_message_limit_min: parseInt(document.getElementById('defLimitMin').value),
+    default_message_limit_max: parseInt(document.getElementById('defLimitMax').value),
+    quiet_hours_start: parseInt(document.getElementById('quietStart').value),
+    quiet_hours_end: parseInt(document.getElementById('quietEnd').value),
+  };
+  await api('/config/global', 'POST', body);
+  toast('全局设置已保存');
+}
+
+async function addGroup() {
+  const gid = document.getElementById('addGroupId').value.trim();
+  if (!gid) return;
+  await api('/config/groups/' + gid, 'POST', {});
+  document.getElementById('addGroupId').value = '';
+  toast('群组已添加');
+  loadPluginConfig();
+}
+
+async function deleteGroup(gid) {
+  if (!confirm('确定删除群 ' + gid + '？')) return;
+  await api('/config/groups/' + gid, 'DELETE');
+  toast('已删除');
+  loadPluginConfig();
+}
+
+function editGroup(gid, g) {
+  document.getElementById('editGroupId').textContent = gid;
+  document.getElementById('editEnabled').value = String(g.enabled);
+  document.getElementById('editTexts').value = (g.text_messages || []).join('\n\n');
+  document.getElementById('editImage').value = g.image_path || '';
+  document.getElementById('editLimitMin').value = g.message_limit_min || 5;
+  document.getElementById('editLimitMax').value = g.message_limit_max || 15;
+  document.getElementById('editInterval').value = g.min_interval_seconds || 7200;
+  document.getElementById('editSplit').value = String(g.split_send || false);
+  document.getElementById('groupModal').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('groupModal').classList.add('hidden');
+}
+
+async function saveGroup() {
+  const gid = document.getElementById('editGroupId').textContent;
+  const texts = document.getElementById('editTexts').value.split(/\n\s*\n/).map(t => t.trim()).filter(t => t);
+  const body = {
+    enabled: document.getElementById('editEnabled').value === 'true',
+    text_messages: texts,
+    image_path: document.getElementById('editImage').value,
+    message_limit_min: parseInt(document.getElementById('editLimitMin').value),
+    message_limit_max: parseInt(document.getElementById('editLimitMax').value),
+    min_interval_seconds: parseInt(document.getElementById('editInterval').value),
+    split_send: document.getElementById('editSplit').value === 'true',
+  };
+  await api('/config/groups/' + gid, 'POST', body);
+  toast('群组配置已保存');
+  closeModal();
+  loadPluginConfig();
+}
+
+async function uploadImage() {
+  const file = document.getElementById('editImageFile').files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('file', file);
+  const h = {};
+  if (token) h['Authorization'] = 'Bearer ' + token;
+  const r = await fetch(API + '/upload-image', {method: 'POST', headers: h, body: fd});
+  const data = await r.json();
+  if (data.ok) {
+    document.getElementById('editImage').value = data.path;
+    toast('图片已上传');
+  } else {
+    toast(data.msg || '上传失败', false);
+  }
+}
+
+// Status
+async function loadStatus() {
+  const [status, logs, conn] = await Promise.all([api('/status'), api('/logs'), api('/connection-status')]);
+
+  // 连接状态
+  const connEl = document.getElementById('connInfo');
+  if (conn.connected) {
+    const botIds = Object.keys(conn.bots || {}).join(', ');
+    connEl.innerHTML = `<span class="badge badge-on" style="font-size:13px;padding:4px 12px">已连接</span> `
+      + `<span style="margin-left:8px">Bot ID: ${botIds}</span> `
+      + `<span style="margin-left:8px;color:#999">连接方式: ${conn.connection_type}</span>`;
+  } else {
+    connEl.innerHTML = `<span class="badge badge-off" style="font-size:13px;padding:4px 12px">未连接</span> `
+      + `<span style="margin-left:8px;color:#999">连接方式: ${conn.connection_type}</span>`
+      + `<div style="margin-top:8px;color:#e65100;font-size:13px">${conn.hint}</div>`;
+  }
+  const groups = status.groups || {};
+  const total = Object.keys(groups).length;
+  const enabled = Object.values(groups).filter(g => g.enabled).length;
+  const logList = logs.logs || [];
+  const successCount = logList.filter(l => l.status === 'success').length;
+  const errorCount = logList.filter(l => l.status === 'error').length;
+
+  document.getElementById('statsCards').innerHTML = `
+    <div class="stat-card"><div class="num">${total}</div><div class="lbl">总群组数</div></div>
+    <div class="stat-card"><div class="num">${enabled}</div><div class="lbl">已启用</div></div>
+    <div class="stat-card"><div class="num">${successCount}</div><div class="lbl">成功发送</div></div>
+    <div class="stat-card"><div class="num">${errorCount}</div><div class="lbl">发送失败</div></div>
+  `;
+
+  document.getElementById('statusTable').innerHTML = Object.entries(groups).map(([gid, g]) => {
+    const pct = g.message_limit > 0 ? Math.round(g.counter / g.message_limit * 100) : 0;
+    return `<tr>
+      <td>${gid}</td>
+      <td><span class="badge ${g.enabled ? 'badge-on' : 'badge-off'}">${g.enabled ? '启用' : '禁用'}</span></td>
+      <td>${g.counter}</td>
+      <td>${g.message_limit}</td>
+      <td><div style="background:#eee;border-radius:4px;height:8px;width:100px"><div style="background:#667eea;height:8px;border-radius:4px;width:${pct}%"></div></div></td>
+      <td>${g.last_sent_time ? g.last_sent_time.replace('T',' ').slice(0,16) : '-'}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('logTable').innerHTML = logList.slice(-30).reverse().map(l =>
+    `<tr><td>${l.time.replace('T',' ').slice(0,19)}</td><td>${l.group_id}</td>
+    <td><span class="badge ${l.status==='success'?'badge-on':'badge-off'}">${l.status}</span></td>
+    <td>${l.message || '-'}</td></tr>`
+  ).join('');
+}
+
+async function loadAll() {
+  try {
+    const r = await api('/system');
+    if (!r.panel_initialized) {
+      switchTab('init');
+      document.getElementById('tabInit').classList.add('active');
+    }
+    detectNapcat('init');
+    // 登录后自动启动 NapCat
+    if (r.napcat_auto_start !== false) {
+      const ns = await api('/napcat-status');
+      if (!ns.running && ns.found) {
+        napcatAction('start');
+      }
+      // NapCat 已在运行但未登录时，自动弹出二维码弹窗
+      if (ns.running) {
+        const ls = await api('/napcat-login-status');
+        if (!ls.isLogin) {
+          const qqInput = document.getElementById('sysNapcatQQ');
+          if (!qqInput || !qqInput.value.trim()) {
+            setTimeout(() => QRCodeManager.show(), 2000);
+          }
+        }
+      }
+    }
+  } catch(e) {}
+}
+
+// auto-refresh status
+setInterval(() => {
+  if (token && !document.getElementById('pageStatus').classList.contains('hidden')) {
+    loadStatus();
+  }
+}, 5000);
+</script>
+</body>
+</html>

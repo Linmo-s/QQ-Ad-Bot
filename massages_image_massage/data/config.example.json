@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "system": {
+    "host": "127.0.0.1",
+    "port": 8080,
+    "superusers": [],
+    "log_level": "INFO",
+    "onebot_connection": "reverse_ws",
+    "onebot_ws_urls": [
+      "ws://127.0.0.1:6700"
+    ],
+    "onebot_api_roots": {},
+    "panel_username": "admin",
+    "panel_password_hash": "",
+    "panel_initialized": false,
+    "napcat_path": "",
+    "napcat_qq_number": "",
+    "napcat_auto_start": true
+  },
+  "global_settings": {
+    "keywords": [
+      "场照",
+      "接妆",
+      "接单",
+      "票代"
+    ],
+    "schedule_delay_min": 30,
+    "schedule_delay_max": 90,
+    "typing_duration_min": 3,
+    "typing_duration_max": 6,
+    "default_message_limit_min": 5,
+    "default_message_limit_max": 15,
+    "quiet_hours_start": 2,
+    "quiet_hours_end": 7
+  },
+  "groups": {},
+  "send_log": []
+}
