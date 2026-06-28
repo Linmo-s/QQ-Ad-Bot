@@ -2,6 +2,10 @@
 
 基于 NoneBot2 + NapCat 的 QQ 群关键词计数广告自动发送机器人。
 
+## 文档教学
+
+https://www.yuque.com/g/shimo-31mqk/che31p/collaborator/join?token=qGCRTIh83UYcDaH7#
+
 ## 功能特性
 
 - **关键词检测** — 监控群聊消息，匹配预设关键词（如"场照"、"接妆"、"接单"等）
